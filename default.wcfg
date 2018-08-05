@@ -28,15 +28,6 @@
       <obj_property name="ElementShortName">state</obj_property>
       <obj_property name="ObjectShortName">state</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_test/data_in" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">data_in[15:0]</obj_property>
-      <obj_property name="ObjectShortName">data_in[15:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_test/data_out" type="array" db_ref_id="1">
-      <obj_property name="ElementShortName">data_out[15:0]</obj_property>
-      <obj_property name="ObjectShortName">data_out[15:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/cpu_test/uut/data_out" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">data_out[15:0]</obj_property>
       <obj_property name="ObjectShortName">data_out[15:0]</obj_property>
@@ -51,19 +42,21 @@
       <obj_property name="ObjectShortName">opcode[7:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
+   <wvobject fp_name="/cpu_test/uut/regs[6]" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">[6]</obj_property>
+      <obj_property name="ObjectShortName">regs[6]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
    <wvobject fp_name="/cpu_test/uut/regs" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">regs[0:7]</obj_property>
       <obj_property name="ObjectShortName">regs[0:7]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
       <wvobject fp_name="/cpu_test/uut/regs[0]" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">[0]</obj_property>
          <obj_property name="ObjectShortName">regs[0]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/cpu_test/uut/regs[1]" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">[1]</obj_property>
          <obj_property name="ObjectShortName">regs[1]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/cpu_test/uut/regs[2]" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">[2]</obj_property>
@@ -84,7 +77,6 @@
       <wvobject fp_name="/cpu_test/uut/regs[6]" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">[6]</obj_property>
          <obj_property name="ObjectShortName">regs[6]</obj_property>
-         <obj_property name="Radix">HEXRADIX</obj_property>
       </wvobject>
       <wvobject fp_name="/cpu_test/uut/regs[7]" type="array" db_ref_id="1">
          <obj_property name="ElementShortName">[7]</obj_property>
@@ -105,16 +97,20 @@
       <obj_property name="ElementShortName">movrd</obj_property>
       <obj_property name="ObjectShortName">movrd</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_test/uut/call1" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">call1</obj_property>
-      <obj_property name="ObjectShortName">call1</obj_property>
+   <wvobject fp_name="/cpu_test/uut/push" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">push</obj_property>
+      <obj_property name="ObjectShortName">push</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_test/uut/call2" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">call2</obj_property>
-      <obj_property name="ObjectShortName">call2</obj_property>
+   <wvobject fp_name="/cpu_test/uut/pop" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">pop</obj_property>
+      <obj_property name="ObjectShortName">pop</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_test/uut/inst_cnt" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">inst_cnt</obj_property>
       <obj_property name="ObjectShortName">inst_cnt</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_test/uut/pc_add" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">pc_add</obj_property>
+      <obj_property name="ObjectShortName">pc_add</obj_property>
    </wvobject>
 </wave_config>

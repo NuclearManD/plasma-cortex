@@ -96,6 +96,8 @@ architecture Behavioral of CPU is
 	signal adsp2 : std_logic; -- add sp, * (phase 2)
 	signal call1 : std_logic; -- call *
 	signal call2 : std_logic; -- call * (phase 2)
+	signal push  : std_logic; -- push r1
+	signal pop   : std_logic; -- pop r1
 	
 	signal inst_cnt : integer:=0;
 	
@@ -153,6 +155,8 @@ architecture Behavioral of CPU is
 					adsp2 <= '0'; -- add sp, * (phase 2)
 					call1 <= '0'; -- add sp, *
 					call2 <= '0'; -- add sp, * (phase 2)
+					push  <= '0'; -- push r1
+					pop   <= '0'; -- pop r1
 					inst_cnt<=inst_cnt+1;
 					if(data_in(15 downto 11)="11111")then
 						movrd <= '1';-- mov r1, *
@@ -192,7 +196,23 @@ architecture Behavioral of CPU is
 						state<=5;
 						tmp<=pcp5;
 						pc_add<=0;
-					else
+					elsif(data_in(15 downto 11)="00101")then -- pop r1
+						t_adr<=spp1;
+						state<=4;
+						regs(6)<=spp4;
+						if(data_in(10 downto 8)/="111")then
+							pc_add<=1;
+						else
+							pc_add<=0;
+						end if;
+						pop<='1';
+					elsif(data_in(15 downto 11)="10101")then -- push r1
+						t_adr<=spm3;
+						state<=5;
+						regs(6)<=spm4;
+						tmp<=regs(to_integer(unsigned(data_in(10 downto 8))));
+						pc_add<=1;
+						push<='1';
 					end if;
 				elsif(state=1)then
 					--if(movrr='1')then			-- mov r1, r2
@@ -286,6 +306,11 @@ architecture Behavioral of CPU is
 					elsif(call2='1')then
 						state<=11;
 						regs(7)<=tmp;
+					elsif(pop='1')then
+						state<=11;
+						regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
+					elsif(push='1')then
+						state<=11;
 					else
 						state<=1;
 					end if;
