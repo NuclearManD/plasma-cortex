@@ -74,12 +74,13 @@ ARCHITECTURE behavior OF cpu_test IS
    constant clk_period : time := 10 ns;
 	
 	type reg_array is array (0 to 14) of std_logic_vector(7 downto 0);
-	signal regs: reg_array := (X"FE",X"00",X"00",X"56",X"55",X"7D",X"00",X"00",X"09",X"12",X"77",X"77",X"77",X"00",X"00");
+	signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0E",X"7C",X"00",X"00",X"00",X"05",X"77",X"77",X"77",X"00",X"00");
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: CPU PORT MAP (
           DATA_in => DATA_in,
+			 data_out=> data_out,
           clk => clk,
           MEM => MEM,
           IO => IO,
@@ -97,12 +98,12 @@ BEGIN
 		wait for clk_period/2;
 		clk <= '1';
 		if(rd='1' and wr='0' and mem='0')then
-			regs(to_integer(unsigned(adr))+1)<=data_out(15 downto 8);
-			regs(to_integer(unsigned(adr)))<=data_out(7 downto 0);
+			regs(to_integer(unsigned(adr)))<=data_out(15 downto 8);
+			regs(to_integer(unsigned(adr))+1)<=data_out(7 downto 0);
 		end if;
 		wait for clk_period/2;
    end process;
-	data_in<=regs(to_integer(unsigned(adr))+1)&regs(to_integer(unsigned(adr)));
+	data_in<=regs(to_integer(unsigned(adr)))&regs(to_integer(unsigned(adr))+1);
    -- Stimulus process
    stim_proc: process
    begin		

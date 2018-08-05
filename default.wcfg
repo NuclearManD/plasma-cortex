@@ -11,7 +11,7 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="18" />
+   <WVObjectSize size="16" />
    <wvobject fp_name="/cpu_test/mem" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">mem</obj_property>
       <obj_property name="ObjectShortName">mem</obj_property>
@@ -32,6 +32,14 @@
       <obj_property name="ElementShortName">data_in[15:0]</obj_property>
       <obj_property name="ObjectShortName">data_in[15:0]</obj_property>
       <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_test/data_out" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_out[15:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_test/uut/data_out" type="array" db_ref_id="1">
+      <obj_property name="ElementShortName">data_out[15:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out[15:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_test/adr" type="array" db_ref_id="1">
       <obj_property name="ElementShortName">adr[31:0]</obj_property>
@@ -97,29 +105,13 @@
       <obj_property name="ElementShortName">movrd</obj_property>
       <obj_property name="ObjectShortName">movrd</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_test/uut/movrr" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">movrr</obj_property>
-      <obj_property name="ObjectShortName">movrr</obj_property>
+   <wvobject fp_name="/cpu_test/uut/call1" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">call1</obj_property>
+      <obj_property name="ObjectShortName">call1</obj_property>
    </wvobject>
-   <wvobject fp_name="/cpu_test/uut/iodx" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">iodx</obj_property>
-      <obj_property name="ObjectShortName">iodx</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_test/uut/movfr" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">movfr</obj_property>
-      <obj_property name="ObjectShortName">movfr</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_test/uut/movto" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">movto</obj_property>
-      <obj_property name="ObjectShortName">movto</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_test/uut/djnz" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">djnz</obj_property>
-      <obj_property name="ObjectShortName">djnz</obj_property>
-   </wvobject>
-   <wvobject fp_name="/cpu_test/uut/math" type="logic" db_ref_id="1">
-      <obj_property name="ElementShortName">math</obj_property>
-      <obj_property name="ObjectShortName">math</obj_property>
+   <wvobject fp_name="/cpu_test/uut/call2" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">call2</obj_property>
+      <obj_property name="ObjectShortName">call2</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_test/uut/inst_cnt" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">inst_cnt</obj_property>
