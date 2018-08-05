@@ -1,0 +1,4 @@
+vhdl work "Fetch.vhd"
+vhdl work "ALU.vhd"
+vhdl work "CPU.vhd"
+vhdl work "cpu_test.vhd"

@@ -1,7 +1,6 @@
-# Windows thumbnail cache files
+# Windows image file caches
 Thumbs.db
 ehthumbs.db
-ehthumbs_vista.db
 
 # Folder config file
 Desktop.ini
@@ -21,3 +20,87 @@ $RECYCLE.BIN/
 # =========================
 # Operating System Files
 # =========================
+
+# OSX
+# =========================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+*.cmd_log
+*.vhi
+*.gise
+*.lso
+*.ngc
+*.ngr
+*.stx
+*.xst
+*.syr
+*.exe
+*.wdb
+*.xrpt
+*.log
+*.cmd
+*.xmsgs
+*.lst
+*.vho
+*.ini
+*.ref
+*.xbcd
+*.xml
+*.csv
+*.ncd
+*.mrp
+*.xwbt
+*.projectmgr
+*.dll
+*.dat
+*.obj
+isim/pn_info
+*.vdb
+*.tcl
+*.edif
+*.bld
+*.ngd
+*.unroutes
+*.twr
+*.par
+*.pad
+*.twx
+*.xdl
+*.ptwx
+*.ut
+*.xpi
+*.ngm
+*.xreport
+*.dbg
+*.didat
+*.c
+*.psg
+*.ppr
+*.jou
+*.wpc
+*.bgn
+*.drc
+*.pcf
+CPU_envsettings.html
+*.vdbl
+*.vdbx
