@@ -41,14 +41,16 @@ ARCHITECTURE behavior OF cpu_test IS
  
     COMPONENT CPU
     PORT(
-         DATA : INOUT  std_logic_vector(7 downto 0);
+         DATA_in : INOUT  std_logic_vector(15 downto 0);
+         DATA_out : INOUT  std_logic_vector(15 downto 0);
          clk : IN  std_logic;
          MEM : OUT  std_logic;
          IO : OUT  std_logic;
          RD : OUT  std_logic;
          WR : OUT  std_logic;
          rst : in  std_logic;
-         ADR : OUT  std_logic_vector(23 downto 0)
+         hold : in  std_logic;
+         ADR : OUT  std_logic_vector(31 downto 0)
         );
     END COMPONENT;
     
@@ -57,7 +59,8 @@ ARCHITECTURE behavior OF cpu_test IS
    signal clk : std_logic := '0';
 
 	--BiDirs
-   signal DATA : std_logic_vector(7 downto 0);
+   signal DATA_in : std_logic_vector(15 downto 0);
+   signal DATA_out : std_logic_vector(15 downto 0);
 
  	--Outputs
    signal MEM : std_logic;
@@ -65,25 +68,26 @@ ARCHITECTURE behavior OF cpu_test IS
    signal RD : std_logic;
    signal rst : std_logic;
    signal WR : std_logic;
-   signal ADR : std_logic_vector(23 downto 0);
+   signal ADR : std_logic_vector(31 downto 0);
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
 	
 	type reg_array is array (0 to 14) of std_logic_vector(7 downto 0);
-	signal regs: reg_array := (X"F8",X"00",X"00",X"56",X"55",X"FB",X"00",X"00",X"00",X"00",X"6B",X"77",X"77",X"00",X"00");
+	signal regs: reg_array := (X"FE",X"00",X"00",X"56",X"55",X"7D",X"00",X"00",X"09",X"12",X"77",X"77",X"77",X"00",X"00");
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
    uut: CPU PORT MAP (
-          DATA => DATA,
+          DATA_in => DATA_in,
           clk => clk,
           MEM => MEM,
           IO => IO,
           RD => RD,
           WR => WR,
           ADR => ADR,
-			 rst => rst
+			 rst => rst,
+			 hold =>'1'
         );
 
    -- Clock process definitions
@@ -93,12 +97,12 @@ BEGIN
 		wait for clk_period/2;
 		clk <= '1';
 		if(rd='1' and wr='0' and mem='0')then
-			regs(to_integer(unsigned(adr)))<=data;
+			regs(to_integer(unsigned(adr))+1)<=data_out(15 downto 8);
+			regs(to_integer(unsigned(adr)))<=data_out(7 downto 0);
 		end if;
 		wait for clk_period/2;
    end process;
-	data<=(others=>'Z') when wr='0' or mem='1' else
-			regs(to_integer(unsigned(adr)));
+	data_in<=regs(to_integer(unsigned(adr))+1)&regs(to_integer(unsigned(adr)));
    -- Stimulus process
    stim_proc: process
    begin		

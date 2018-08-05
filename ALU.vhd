@@ -62,8 +62,8 @@ architecture Behavioral of ALU is
 				bignegative)) 		when op="1010" else
 			 abs(bi) 				when op="1011" else
 			 not bi  				when op="1100" else
-			 bi+4 					when op="1110" else
-			 bi-4 					when op="1111" else
+			 bi+1 					when op="1110" else
+			 bi-1 					when op="1111" else
 			 to_signed(-1,33);
 		process(clk)
 		begin

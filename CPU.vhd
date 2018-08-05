@@ -65,14 +65,14 @@ architecture Behavioral of CPU is
 	signal y : std_logic_vector(31 downto 0);
 	signal op: std_logic_vector(3 downto 0);
 	
-	
 	signal pc_next : std_logic_vector(31 downto 0);
 	
 	signal count : integer range 0 to 15;
 	signal tmp : std_logic_vector(31 downto 0);
 	
 	signal t_adr : std_logic_vector(31 downto 0);
-	signal fetch_adr : std_logic_vector(31 downto 0);
+	
+	signal pcp1 : std_logic_vector(31 downto 0);
 	
 	signal calc   : std_logic;
 	signal flags  : std_logic_vector(3 downto 0);
@@ -86,6 +86,10 @@ architecture Behavioral of CPU is
 	signal movto : std_logic; -- mov [r2], r1
 	signal djnz  : std_logic; -- djnz *
 	signal math  : std_logic; -- (math)
+	signal adsp1 : std_logic; -- add sp, *
+	signal adsp2 : std_logic; -- add sp, * (phase 2)
+	
+	signal inst_cnt : integer:=0;
 	
 	begin
 	
@@ -98,12 +102,12 @@ architecture Behavioral of CPU is
 			f => flags,
 			clk=>clk
 		);
-		ADR <= fetch_adr when state=0 or state=1 or state=6 or state=10 or state=11 else
+		ADR <= regs(7) when state=0 or state=1 or state=6 or state=10 or state=11 else
 				 std_logic_vector(
 				 unsigned(
 				 t_adr)+
 				 to_unsigned(
-				 count,24))			when state=4 or state=5 else
+				 count,32))			when state=4 or state=5 else
 				 t_adr;
 		MEM<= '1' when state=7 or state=8 or state=9 else
 				'0';
@@ -115,9 +119,9 @@ architecture Behavioral of CPU is
 			if(rst='0')then
 				state<=10;
 				count<=0;
-				DATA<=(others=>'Z');
 				rd<='0';
 				wr<='1';
+				inst_cnt<=0;
 			elsif(hold='0')then
 			-- wait
 			elsif(rising_edge(clk))then
@@ -127,7 +131,7 @@ architecture Behavioral of CPU is
 					state <= 1;
 					calc  <= '0';
 					count <= 0;
-					opcode<= DATA_in;
+					opcode<= DATA_in(7 downto 0);
 					movrd <= '0';-- mov r1, *
 					movrr <= '0';-- mov r1, r2
 					iodx  <= '0';-- in/out dx, ax
@@ -135,11 +139,20 @@ architecture Behavioral of CPU is
 					movfr <= '0';-- mov r1, [r2]
 					djnz  <= '0';-- djnz *
 					math  <= '0';-- (math)
-					
+					adsp1 <= '0';-- add sp, *
+					adsp2 <= '0';-- add sp, * (phase 2)
+					inst_cnt<=inst_cnt+1;
 					if(data_in(7 downto 3)="11111")then
 						movrd <= '1';-- mov r1, *
 					elsif(data_in(7)='0' and data_in(3)='0')then
-						movrr <= '1';-- mov r1, r2
+						--movrr <= '1';-- mov r1, r2
+						state<=11;
+						regs(to_integer(unsigned(opcode(2 downto 0))))<=regs(to_integer(unsigned(opcode(6 downto 4))));
+						if(opcode(6 downto 4)/="111")then
+							pc_add<=1;
+						else
+							pc_add<=0;
+						end if;
 					elsif(data_in(7 downto 1)="0110101")then
 						iodx  <= '1';-- in/out dx, ax
 					elsif(data_in(3)='1' and (data_in(7 downto 4)="1011" or data_in(7 downto 5)="110"))then
@@ -150,29 +163,32 @@ architecture Behavioral of CPU is
 						djnz  <= '1';-- djnz *
 					elsif(data_in(7)='1' and data_in(3)='0')then
 						math  <= '1';-- (math)
+					elsif(data_in(7 downto 0)=X"7D")then
+						adsp1<='1';
+						t_adr<=pcp1;
+						pc_add<=5;
+						state<=4;
 					end if;
 				elsif(state=1)then
-					if(movrr='1')then			-- mov r1, r2
-						tmp<=regs(to_integer(unsigned(opcode(6 downto 4))));
-						state<=2; -- Q
-						if(opcode(6 downto 4)/="111")then
-							pc_add<=1;
-						else
-							pc_add<=0;
-						end if;
-					elsif(movrd='1')then					-- mov r1, *
+					--if(movrr='1')then			-- mov r1, r2
+					--	tmp<=
+					--	state<=2; -- Q
+					--	if(opcode(6 downto 4)/="111")then
+					--		pc_add<=1;
+					--	else
+					--		pc_add<=0;
+					--	end if;
+					if(movrd='1')then					-- mov r1, *
 						count<=0;
 						state<=4;
 						pc_add<=5;
-						t_adr<=std_logic_vector(unsigned(regs(7)(23 downto 0))+1);
+						t_adr<=pcp1;
 					elsif(movto='1')then		-- mov [r2], r1
 						count<=0;
 						t_adr<=regs(to_integer(unsigned(opcode(6 downto 4))));
 						state<=5;
 						tmp<=regs(to_integer(unsigned(opcode(2 downto 0))));
 						pc_add<=1;
-						rd    <= '1';
-						wr    <= '0';
 					elsif(movfr='1')then		-- mov r1, [r2]
 						count<=0;
 						t_adr<=regs(to_integer(unsigned(opcode(6 downto 4))));
@@ -183,7 +199,7 @@ architecture Behavioral of CPU is
 						b<=X"00000001";
 						op<="0001"; -- subtract
 						calc<='1';
-						state<=5;
+						state<=6;
 						pc_add<=5;
 					elsif(iodx='1')then				-- in/out dx, ax(7 downto 0)
 						t_adr<=regs(3);
@@ -194,7 +210,7 @@ architecture Behavioral of CPU is
 						end if;
 						pc_add<=1;
 					elsif(math='1')then				-- (math)
-						state<=5;
+						state<=6;
 						op<=opcode(6)&opcode(2 downto 0);
 						a<=ax;
 						b<=regs(to_integer(unsigned(opcode(6 downto 4))));
@@ -205,10 +221,10 @@ architecture Behavioral of CPU is
 						state<=11;
 					end if;
 				elsif(state=2)then
-					if(movrr='1')then					-- mov r1, r2
-						regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
-						state<=11;
-					elsif(math='1')then				-- (math)
+					--if(movrr='1')then					-- mov r1, r2
+					--	regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
+					--	state<=11;
+					if(math='1')then				-- (math)
 						if(opcode(6)='0')then
 							a<=ax;
 						else
@@ -222,22 +238,9 @@ architecture Behavioral of CPU is
 						state<=11;
 					elsif(movto='1')then 			-- mov [r2], r1
 						state<=11;
-					elsif(movat='1')then 			-- mov r1, [r2] / mov [r2], r1
-						t_adr<=std_logic_vector(unsigned(regs(to_integer(unsigned(opcode(6 downto 4)))))+to_unsigned(count+1,24));
-						count<=count+1;
-						if(opcode(7)='0')then
-							tmp<=tmp(23 downto 0)&DATA;
-							if(count=3)then
-								state<=11;
-								regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp(16 downto 0)&DATA_in;
-							end if;
-						else
-							tmp(31 downto 8)<=tmp(23 downto 0);
-							DATA_out<=tmp(31 downto 16);
-							if(count=3)then
-								state<=11;
-							end if;
-						end if;
+					elsif(movfr='1')then 			-- mov r1, [r2]
+						regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
+						state<=11;
 					elsif(djnz='1')then				-- djnz *
 						if(flags(1)='0')then
 							movrd<='1';
@@ -249,6 +252,16 @@ architecture Behavioral of CPU is
 							state<=11;
 						end if;
 						regs(2)<=y;
+					elsif(adsp1='1')then
+						adsp1<='0';
+						adsp2<='1';
+						a<=tmp;
+						b<=regs(6);
+						op<="0000";
+						state<=6;
+					elsif(adsp2='1')then
+						regs(6)<=y;
+						state<=11;
 					else
 						state<=1;
 					end if;
@@ -265,20 +278,22 @@ architecture Behavioral of CPU is
 					end if;
 				elsif(state=4)then -- read 32 bits
 					tmp<=tmp(15 downto 0)&DATA_in;
-					if(count=1)then
+					if(count=2)then
 						state<=2;
 						count<=0;
 					else
-						count<=count+1;
+						count<=count+2;
 					end if;
 				elsif(state=5)then -- write 32 bits
-					tmp<=X"00"&tmp(31 downto 16);
+					rd <= '1';
+					wr <= '0';
+					tmp<=X"0000"&tmp(31 downto 16);
 					DATA_out<=tmp(15 downto 0);
-					if(count=1)then
+					if(count=2)then
 						state<=2;
 						count<=0;
 					else
-						count<=count+1;
+						count<=count+2;
 					end if;
 				elsif(state=6)then -- ALU cycles
 					if(count=1)then
@@ -295,7 +310,6 @@ architecture Behavioral of CPU is
 					regs(0)(15 downto 0)<=daTa_in;
 				elsif(state=9)then
 					state<=3;
-					data<="ZZZZZZZZ";
 				elsif(state=10)then
 					pc_add<=0;
 					regs<=(X"00000000",X"00000000",X"00000000",X"00000000",X"00000000",X"00000000",X"00000000",X"00000000");
@@ -305,6 +319,7 @@ architecture Behavioral of CPU is
 					state<=0;
 					rd<='0';
 					wr<='1';
+					pcp1<=std_logic_vector(unsigned(pc_next)+1);
 				end if;
 			end if;
 		end process;
