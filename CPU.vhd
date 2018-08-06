@@ -98,6 +98,9 @@ architecture Behavioral of CPU is
 	signal call2 : std_logic; -- call * (phase 2)
 	signal push  : std_logic; -- push r1
 	signal pop   : std_logic; -- pop r1
+	signal ldsp  : std_logic; -- mov r1, [sp+**]
+	signal stsp  : std_logic; -- mov [sp+**], r1
+	
 	
 	signal inst_cnt : integer:=0;
 	
@@ -157,6 +160,8 @@ architecture Behavioral of CPU is
 					call2 <= '0'; -- add sp, * (phase 2)
 					push  <= '0'; -- push r1
 					pop   <= '0'; -- pop r1
+					stsp  <= '0'; -- mov [sp+**], r1
+					ldsp  <= '0'; -- mov r1, [sp+**]
 					inst_cnt<=inst_cnt+1;
 					if(data_in(15 downto 11)="11111")then
 						movrd <= '1';-- mov r1, *
@@ -213,6 +218,16 @@ architecture Behavioral of CPU is
 						tmp<=regs(to_integer(unsigned(data_in(10 downto 8))));
 						pc_add<=1;
 						push<='1';
+					elsif(data_in(15 downto 10)="000010")then -- mov r1, [sp+**]
+						ldsp<='1';
+						t_adr<=pcp1;
+						state<=3; -- this one is weird: states are in the order of 0,3,4,2,11 not 0,1,4,2,11
+						pc_add<=3;
+					elsif(data_in(15 downto 10)="100010")then -- mov [sp+**], r1
+						stsp<='1';
+						t_adr<=pcp1;
+						state<=3; -- this one is weird: states are in the order of 0,3,4,2,11 not 0,1,4,2,11
+						pc_add<=3;
 					end if;
 				elsif(state=1)then
 					--if(movrr='1')then			-- mov r1, r2
@@ -250,7 +265,7 @@ architecture Behavioral of CPU is
 						state<=6;
 						op<=opcode(6)&opcode(2 downto 0);
 						a<=ax;
-						b<=regs(to_integer(unsigned(opcode(6 downto 4))));
+						b<=regs(to_integer(unsigned(opcode(5 downto 4))));
 					else
 						regs(7)<=X"00000200";			 					-- invalid opcode
 						state<=11;
@@ -260,14 +275,12 @@ architecture Behavioral of CPU is
 					--	regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
 					--	state<=11;
 					if(math='1')then				-- (math)
+						state<=11;
 						if(opcode(6)='0')then
-							a<=ax;
+							regs(0)<=y;
 						else
-							a<=regs(to_integer(unsigned(opcode(6 downto 4))));
+							regs(to_integer(unsigned(opcode(3 downto 4))))<=y;
 						end if;
-						b<=regs(to_integer(unsigned(opcode(6 downto 4))));
-						op<=opcode(6)&opcode(2 downto 0);
-						state<=3;
 					elsif(movrd='1')then   			-- mov r1, *
 						regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
 						state<=11;
@@ -311,19 +324,25 @@ architecture Behavioral of CPU is
 						regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
 					elsif(push='1')then
 						state<=11;
+					elsif(ldsp='1')then
+						regs(to_integer(unsigned(opcode(2 downto 0))))<=tmp;
+						state<=11;
+					elsif(stsp='1')then
+						state<=11;
 					else
 						state<=1;
 					end if;
 				elsif(state=3)then
 					state<=11;
-					if(math='1')then
-						if(opcode(6)='0')then
-							regs(0)<=y;
-						else
-							regs(to_integer(unsigned(opcode(6 downto 4))))<=y;
-						end if;
-					elsif(opcode="01101000")then		-- in dx, ax(7 downto 0)
+					if(opcode="01101000")then		-- in dx, ax(7 downto 0)
 						regs(0)(15 downto 0)<=tmp(15 downto 0);
+					elsif(ldsp='1')then
+						state<=4;
+						t_adr<=std_logic_vector(signed(spp1)+signed(data_in)); -- add one so that alignment makes sense
+					elsif(stsp='1')then
+						state<=5;
+						t_adr<=std_logic_vector(signed(spp1)+signed(data_in)); -- add one so that alignment makes sense
+						tmp<=regs(to_integer(unsigned(opcode(2 downto 0))));
 					end if;
 				elsif(state=4)then -- read 32 bits
 					tmp<=tmp(15 downto 0)&DATA_in;

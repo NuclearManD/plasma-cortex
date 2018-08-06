@@ -73,11 +73,13 @@ ARCHITECTURE behavior OF cpu_test IS
    -- Clock period definitions
    constant clk_period : time := 10 ns;
 	
-	type reg_array is array (0 to 14) of std_logic_vector(7 downto 0);
+	type reg_array is array (0 to 15) of std_logic_vector(7 downto 0);
+	-- stack mov test (mov r1, [pc-4])
+	signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0F",X"C4",X"88",X"FF",X"FC",X"08",X"FF",X"FC",X"77",X"77",X"00",X"00");
 	-- call * test
-	signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0E",X"7C",X"00",X"00",X"00",X"05",X"77",X"77",X"77",X"00",X"00");
+	-- signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0E",X"7C",X"00",X"00",X"00",X"05",X"77",X"77",X"77",X"00",X"00",X"00");
 	-- push/pop test
-	-- signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0E",X"A8",X"2F",X"00",X"00",X"05",X"77",X"77",X"77",X"00",X"00");
+	-- signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0E",X"A8",X"2F",X"00",X"00",X"05",X"77",X"77",X"77",X"00",X"00",X"00");
 BEGIN
  
 	-- Instantiate the Unit Under Test (UUT)
