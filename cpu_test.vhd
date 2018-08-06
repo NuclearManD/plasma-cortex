@@ -75,7 +75,7 @@ ARCHITECTURE behavior OF cpu_test IS
 	
 	type reg_array is array (0 to 15) of std_logic_vector(7 downto 0);
 	-- stack mov test (mov r1, [pc-4])
-	signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0F",X"C4",X"88",X"FF",X"FC",X"08",X"FF",X"FC",X"77",X"77",X"00",X"00");
+	signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0F",X"C4",X"88",X"FF",X"FC",X"09",X"FF",X"FC",X"77",X"77",X"00",X"00");
 	-- call * test
 	-- signal regs: reg_array := (X"FE",X"00",X"00",X"00",X"0E",X"7C",X"00",X"00",X"00",X"05",X"77",X"77",X"77",X"00",X"00",X"00");
 	-- push/pop test
