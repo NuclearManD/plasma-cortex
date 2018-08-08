@@ -104,6 +104,8 @@ architecture Behavioral of CPU is
 	signal pop   : std_logic; -- pop r1
 	signal ldsp  : std_logic; -- mov r1, [sp+**]
 	signal stsp  : std_logic; -- mov [sp+**], r1
+	
+	signal wr_init:std_logic;
 	--signal misaligned:std_logic; -- make misalignment transparent
 	
 	signal inst_cnt : integer:=0;
@@ -130,6 +132,9 @@ architecture Behavioral of CPU is
 				'0';
 		IO <= '0' when state=8 or state=9 else
 				'1';
+		--rd <= '0' when state=0 or state=1 or state=11 or state=3 or state=10 or state=4 else
+		--		'1';
+		--wr <= '1
 		
 		process(clk,rst)
 		begin
@@ -147,6 +152,7 @@ architecture Behavioral of CPU is
 				n_ub<='0';
 				n_lb<='0';
 				if(state=0)then
+					wr_init<='0';
 					rd    <= '0';
 					wr    <= '1';
 					state <= 1;
@@ -379,29 +385,29 @@ architecture Behavioral of CPU is
 				elsif(state=5)then -- write 32 bits
 					rd <= '1';
 					wr <= '0';
+					wr_init<='1';
 					if(t_adr(0)='0')then
 						tmp<=X"0000"&tmp(31 downto 16);
 						DATA_out<=tmp(15 downto 0);
-						if(count=2)then
+						if(wr_init='1')then
+							count<=2;
 							state<=2;
-						else
-							count<=count+2;
 						end if;
 					else -- memory misaligned!
-						count<=count+1;
-						if(count=3)then
+						if(count=1)then
 							state<=2;
+							count<=3;
 							tmp<=X"00"&tmp(31 downto 8);
 							DATA_out(7 downto 0)<=tmp(7 downto 0);
 							n_ub<='1';
-						elsif(count=0)then
+						elsif(count=0 and wr_init='0')then
 							tmp<=X"00"&tmp(31 downto 8);
 							DATA_out(15 downto 8)<=tmp(7 downto 0);
 							n_lb<='1';
-						else
+						elsif(count=0 and wr_init='1')then
 							tmp<=X"0000"&tmp(31 downto 16);
 							DATA_out<=tmp(15 downto 0);
-							count<=count+2;
+							count<=1;
 						end if;
 					end if;
 				elsif(state=6)then -- ALU cycles
