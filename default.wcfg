@@ -11,10 +11,18 @@
          </top_modules>
       </db_ref>
    </db_ref_list>
-   <WVObjectSize size="16" />
+   <WVObjectSize size="19" />
    <wvobject fp_name="/cpu_test/mem" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">mem</obj_property>
       <obj_property name="ObjectShortName">mem</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_test/uut/n_ub" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">n_ub</obj_property>
+      <obj_property name="ObjectShortName">n_ub</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_test/uut/n_lb" type="logic" db_ref_id="1">
+      <obj_property name="ElementShortName">n_lb</obj_property>
+      <obj_property name="ObjectShortName">n_lb</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_test/rd" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">rd</obj_property>
@@ -23,6 +31,10 @@
    <wvobject fp_name="/cpu_test/wr" type="logic" db_ref_id="1">
       <obj_property name="ElementShortName">wr</obj_property>
       <obj_property name="ObjectShortName">wr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/cpu_test/uut/count" type="other" db_ref_id="1">
+      <obj_property name="ElementShortName">count</obj_property>
+      <obj_property name="ObjectShortName">count</obj_property>
    </wvobject>
    <wvobject fp_name="/cpu_test/uut/state" type="other" db_ref_id="1">
       <obj_property name="ElementShortName">state</obj_property>

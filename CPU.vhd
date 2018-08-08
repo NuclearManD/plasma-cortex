@@ -37,6 +37,8 @@ entity CPU is
            IO : out  STD_LOGIC;
            RD : out  STD_LOGIC;
            WR : out  STD_LOGIC;
+           n_ub : out  STD_LOGIC;
+           n_lb : out  STD_LOGIC;
 			  hold:in std_logic;
            rst : in  STD_LOGIC;
            ADR : out  STD_LOGIC_VECTOR (31 downto 0));
@@ -80,6 +82,8 @@ architecture Behavioral of CPU is
 	signal spm4 : std_logic_vector(31 downto 0);
 	signal spp1 : std_logic_vector(31 downto 0);
 	
+	signal data_in_as : std_logic_vector(15 downto 0);
+	
 	signal calc   : std_logic;
 	signal flags  : std_logic_vector(3 downto 0);
 	
@@ -100,7 +104,7 @@ architecture Behavioral of CPU is
 	signal pop   : std_logic; -- pop r1
 	signal ldsp  : std_logic; -- mov r1, [sp+**]
 	signal stsp  : std_logic; -- mov [sp+**], r1
-	
+	--signal misaligned:std_logic; -- make misalignment transparent
 	
 	signal inst_cnt : integer:=0;
 	
@@ -140,13 +144,15 @@ architecture Behavioral of CPU is
 			elsif(rising_edge(clk))then
 				rd<='0';
 				wr<='1';
+				n_ub<='0';
+				n_lb<='0';
 				if(state=0)then
 					rd    <= '0';
 					wr    <= '1';
 					state <= 1;
 					calc  <= '0';
 					count <= 0;
-					opcode<= DATA_in(15 downto 8);
+					opcode<= DATA_in_as(15 downto 8);
 					movrd <= '0'; -- mov r1, *
 					movrr <= '0'; -- mov r1, r2
 					iodx  <= '0'; -- in/out dx, ax
@@ -163,67 +169,67 @@ architecture Behavioral of CPU is
 					stsp  <= '0'; -- mov [sp+**], r1
 					ldsp  <= '0'; -- mov r1, [sp+**]
 					inst_cnt<=inst_cnt+1;
-					if(data_in(15 downto 11)="11111")then
+					if(data_in_as(15 downto 11)="11111")then
 						movrd <= '1';-- mov r1, *
 						pc_add<=5;
-					elsif(data_in(15)='0' and data_in(11)='0')then
+					elsif(data_in_as(15)='0' and data_in_as(11)='0')then
 						--movrr <= '1';-- mov r1, r2
 						state<=11;
-						regs(to_integer(unsigned(data_in(10 downto 8))))<=regs(to_integer(unsigned(data_in(14 downto 12))));
-						if(data_in(14 downto 12)/="111")then
+						regs(to_integer(unsigned(data_in_as(10 downto 8))))<=regs(to_integer(unsigned(data_in_as(14 downto 12))));
+						if(data_in_as(14 downto 12)/="111")then
 							pc_add<=1;
 						else
 							pc_add<=0;
 						end if;
-					elsif(data_in(15 downto 9)="0110101")then
+					elsif(data_in_as(15 downto 9)="0110101")then
 						iodx  <= '1';-- in/out dx, ax
 						pc_add<=1;
-					elsif(data_in(11)='1' and (data_in(15 downto 12)="1011" or data_in(15 downto 13)="110"))then
+					elsif(data_in_as(11)='1' and (data_in_as(15 downto 12)="1011" or data_in_as(15 downto 13)="110"))then
 						movto <= '1';-- mov [r2], r1
 						pc_add<=1;
-					elsif(data_in(11)='1' and (data_in(15 downto 12)="0011" or data_in(15 downto 13)="010"))then
+					elsif(data_in_as(11)='1' and (data_in_as(15 downto 12)="0011" or data_in_as(15 downto 13)="010"))then
 						movfr <= '1';-- mov r1, [r2]
 						pc_add<=1;
-					elsif(data_in(15 downto 0)=X"6C")then
+					elsif(data_in_as(15 downto 0)=X"6C")then
 						pc_add<=5;
 						djnz  <= '1';-- djnz *
-					elsif(data_in(15)='1' and data_in(11)='0')then
+					elsif(data_in_as(15)='1' and data_in_as(11)='0')then
 						math  <= '1';-- (math)
 						pc_add<=1;
-					elsif(data_in(15 downto 8)=X"7D")then
+					elsif(data_in_as(15 downto 8)=X"7D")then
 						adsp1<='1';
 						t_adr<=pcp1;
 						pc_add<=5;
 						state<=4;
-					elsif(data_in(15 downto 8)=X"7C")then
+					elsif(data_in_as(15 downto 8)=X"7C")then
 						call1<='1';
 						t_adr<=spm3;
 						state<=5;
 						tmp<=pcp5;
 						pc_add<=0;
-					elsif(data_in(15 downto 11)="00101")then -- pop r1
+					elsif(data_in_as(15 downto 11)="00101")then -- pop r1
 						t_adr<=spp1;
 						state<=4;
 						regs(6)<=spp4;
-						if(data_in(10 downto 8)/="111")then
+						if(data_in_as(10 downto 8)/="111")then
 							pc_add<=1;
 						else
 							pc_add<=0;
 						end if;
 						pop<='1';
-					elsif(data_in(15 downto 11)="10101")then -- push r1
+					elsif(data_in_as(15 downto 11)="10101")then -- push r1
 						t_adr<=spm3;
 						state<=5;
 						regs(6)<=spm4;
-						tmp<=regs(to_integer(unsigned(data_in(10 downto 8))));
+						tmp<=regs(to_integer(unsigned(data_in_as(10 downto 8))));
 						pc_add<=1;
 						push<='1';
-					elsif(data_in(15 downto 10)="000010")then -- mov r1, [sp+**]
+					elsif(data_in_as(15 downto 10)="000010")then -- mov r1, [sp+**]
 						ldsp<='1';
 						t_adr<=pcp1;
 						state<=3; -- this one is weird: states are in the order of 0,3,4,2,11 not 0,1,4,2,11
 						pc_add<=3;
-					elsif(data_in(15 downto 10)="100010")then -- mov [sp+**], r1
+					elsif(data_in_as(15 downto 10)="100010")then -- mov [sp+**], r1
 						stsp<='1';
 						t_adr<=pcp1;
 						state<=3; -- this one is weird: states are in the order of 0,3,4,2,11 not 0,1,4,2,11
@@ -337,31 +343,66 @@ architecture Behavioral of CPU is
 					if(opcode="01101000")then		-- in dx, ax(7 downto 0)
 						regs(0)(15 downto 0)<=tmp(15 downto 0);
 					elsif(ldsp='1')then
-						state<=4;
-						t_adr<=std_logic_vector(signed(spp1)+signed(data_in)); -- add one so that alignment makes sense
+						if(regs(7)(0)='0')then
+							state<=4;
+							t_adr<=std_logic_vector(signed(spp1)+signed(data_in)); -- add one so that alignment makes sense
+						end if;
 					elsif(stsp='1')then
-						state<=5;
-						t_adr<=std_logic_vector(signed(spp1)+signed(data_in)); -- add one so that alignment makes sense
-						tmp<=regs(to_integer(unsigned(opcode(2 downto 0))));
+						if(regs(7)(0)='0')then
+							state<=5;
+							t_adr<=std_logic_vector(signed(spp1)+signed(data_in)); -- add one so that alignment makes sense
+							tmp<=regs(to_integer(unsigned(opcode(2 downto 0))));
+						end if;
 					end if;
 				elsif(state=4)then -- read 32 bits
-					tmp<=tmp(15 downto 0)&DATA_in;
-					if(count=2)then
-						state<=2;
-						count<=0;
-					else
-						count<=count+2;
+					if(t_adr(0)='0')then
+						tmp<=tmp(15 downto 0)&DATA_in;
+						if(count=2)then
+							state<=2;
+							count<=0;
+						else
+							count<=count+2;
+						end if;
+					else -- memory misaligned!
+						count<=count+1;
+						if(count=3)then
+							state<=2;
+							count<=0;
+							tmp<=tmp(23 downto 0)&DATA_in(7 downto 0);
+						elsif(count=0)then
+							tmp<=tmp(23 downto 0)&DATA_in(15 downto 8);
+						else
+							tmp<=tmp(15 downto 0)&DATA_in;
+							count<=count+2;
+						end if;
 					end if;
 				elsif(state=5)then -- write 32 bits
 					rd <= '1';
 					wr <= '0';
-					tmp<=X"0000"&tmp(31 downto 16);
-					DATA_out<=tmp(15 downto 0);
-					if(count=2)then
-						state<=2;
-						count<=0;
-					else
-						count<=count+2;
+					if(t_adr(0)='0')then
+						tmp<=X"0000"&tmp(31 downto 16);
+						DATA_out<=tmp(15 downto 0);
+						if(count=2)then
+							state<=2;
+						else
+							count<=count+2;
+						end if;
+					else -- memory misaligned!
+						count<=count+1;
+						if(count=3)then
+							state<=2;
+							tmp<=X"00"&tmp(31 downto 8);
+							DATA_out(7 downto 0)<=tmp(7 downto 0);
+							n_ub<='1';
+						elsif(count=0)then
+							tmp<=X"00"&tmp(31 downto 8);
+							DATA_out(15 downto 8)<=tmp(7 downto 0);
+							n_lb<='1';
+						else
+							tmp<=X"0000"&tmp(31 downto 16);
+							DATA_out<=tmp(15 downto 0);
+							count<=count+2;
+						end if;
 					end if;
 				elsif(state=6)then -- ALU cycles
 					if(count=1)then
@@ -396,5 +437,7 @@ architecture Behavioral of CPU is
 		end process;
 		ax<=regs(0);
 		pc_next<=std_logic_vector(unsigned(regs(7))+pc_add);
+		data_in_as<=data_in when regs(7)(0)='1' else
+						data_in(7 downto 0)&data_in(15 downto 8);
 end Behavioral;
 
